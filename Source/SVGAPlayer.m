@@ -60,12 +60,24 @@
 - (void)initPlayer {
     self.contentMode = UIViewContentModeTop;
     self.clearsAfterStop = YES;
+    self.volume = 1;
 }
 
 - (void)willMoveToSuperview:(UIView *)newSuperview {
     [super willMoveToSuperview:newSuperview];
     if (newSuperview == nil) {
         [self stopAnimation:YES];
+    }
+}
+
+/// 音量 [0-1], 默认1
+- (void)setVolume:(float)volume {
+    if (_volume == volume) {
+        return;
+    }
+    _volume = volume;
+    for (SVGAAudioLayer *layer in self.audioLayers) {
+        layer.audioPlayer.volume = volume;
     }
 }
 
@@ -346,6 +358,7 @@
     if (self.forwardAnimating && self.audioLayers.count > 0) {
         for (SVGAAudioLayer *layer in self.audioLayers) {
             if (!layer.audioPlaying && layer.audioItem.startFrame <= self.currentFrame && self.currentFrame <= layer.audioItem.endFrame) {
+                layer.audioPlayer.volume = _volume;
                 [layer.audioPlayer setCurrentTime:(NSTimeInterval)(layer.audioItem.startTime / 1000)];
                 [layer.audioPlayer play];
                 layer.audioPlaying = YES;
